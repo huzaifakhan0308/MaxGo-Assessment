@@ -1,0 +1,43 @@
+.home-container {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5vh;
+}
+
+.home-container h1 {
+    font-size: x-large;
+    justify-self: center;
+    font-weight: bold;
+    margin-bottom: 5vh;
+    padding: 10px;
+}
+
+.home-container h2 {
+    display: flex;
+    align-items: center;
+    font-size: large;
+    justify-self: center;
+    font-weight: bold;
+}
+
+.home-container h2 img {
+    width: 15px;
+    height: 15px;
+    margin: 20px 10px 10px 10px;
+}
+
+@media screen and (min-width: 500px) {
+    .home-container h1 {
+        font-size: xx-large;
+    }
+    .home-container h2 {
+        font-size: x-large;
+    }
+    .home-container h2 img {
+        width: 25px;
+        height: 25px;
+    }
+}
