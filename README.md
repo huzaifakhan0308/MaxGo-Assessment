@@ -81,6 +81,7 @@ yarn install
 Clone these two repository to your desired folder:
 
 git clone https://github.com/huzaifakhan0308/maxgo-assessment.git
+
 git clone https://github.com/huzaifakhan0308/maxgo-assessment-backend.git
 
 ### Install
