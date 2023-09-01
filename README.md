@@ -1,4 +1,3 @@
-<img src="./img.jpg" />
 <a name="readme-top"></a>
 
 # 📗 Table of Contents
@@ -23,6 +22,9 @@
 ### about project
 
 > Discover your perfect home among a wide range of properties using intuitive filters and search options with Real Estate Viewer.
+
+## Project Preview
+![Screenshot 2023-09-01 154701](https://github.com/huzaifakhan0308/maxgo-assessment/assets/114409312/b229599b-767c-4e9e-b501-7db9da1fe2d8)
 
 ## 🛠 Built With <a name="built-with"></a>
 ### Built With
