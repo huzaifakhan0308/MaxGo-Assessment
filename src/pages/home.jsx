@@ -1,62 +1,116 @@
 import React, { useEffect, useState } from 'react';
+import '../styles/home.css';
+import { useDispatch, useSelector } from 'react-redux';
 import DataTableView from '../components/DataTableView';
 import CardView from '../components/CardView';
-import '../styles/home.css';
+import Pagination from '../hooks/pagination';
+import { fetchProperties } from '../redux/listings/listingsSlice';
+import { setItem, getItem } from '../hooks/localStorage';
+import { changeViewBtn, sortByBtn } from './style';
 import arrow from '../assests/icons/download.png';
 
 function Home() {
-  const [changeView, setChangeView] = useState(true);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const productsPerPage = 20;
-  const totalPages = Math.ceil(10 / productsPerPage);
-  // const startIndex = currentPageIndex * productsPerPage;
-  // const visibleProducts = products.slice(startIndex, startIndex + productsPerPage);
-
-  const handleNextPage = () => {
-    if (currentPageIndex < totalPages - 1) {
-      setCurrentPageIndex(currentPageIndex + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPageIndex > 0) {
-      setCurrentPageIndex(currentPageIndex - 1);
-    }
-  };
-
+  const { listings, status } = useSelector((store) => store.listings);
+  const dispatch = useDispatch();
   useEffect(() => {
-    const getData = async () => {
+    dispatch(fetchProperties());
+  }, [dispatch]);
 
-    };
-    getData();
-  }, [currentPageIndex]);
-
+  // changing views of Listings
+  const [changeView, setChangeView] = useState(() => (getItem('changeView') !== null ? getItem('changeView') : true));
   const switchView = () => {
     if (changeView) {
       setChangeView(false);
+      setItem(false, 'changeView');
     } else {
       setChangeView(true);
+      setItem(true, 'changeView');
     }
   };
 
+  const [ascOrder, setAscOrder] = useState(false);
+  const [ascListings, setAscListings] = useState([]);
+
+  useEffect(() => {
+    setAscListings(listings);
+  }, [listings]);
+
+  // setting Listings in ascending order
+  const handleSort = () => {
+    if (!ascOrder) {
+      const sortedListings = [...listings];
+      const sorted = sortedListings.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      setAscListings(sorted);
+      setAscOrder(true);
+    } else {
+      setAscListings(listings);
+      setAscOrder(false);
+    }
+  };
+
+  const [searchInputValue, setSearchInputValue] = useState('');
+  const [filteredListings, setFilteredListings] = useState([]);
+  const [maxInputValue, setMaxInputValue] = useState('');
+
+  // searching by title and filtering by max price
+  const updateFilteredListings = (titleValue, maxPriceValue) => {
+    let filtered = ascListings;
+
+    if (titleValue) {
+      filtered = filtered.filter(
+        (listing) => listing.title.toLowerCase().includes(titleValue.toLowerCase()),
+      );
+    }
+
+    if (maxPriceValue !== '') {
+      filtered = filtered.filter(
+        (listing) => parseFloat(listing.price) <= parseFloat(maxPriceValue),
+      );
+    }
+
+    setFilteredListings([...filtered]);
+  };
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const itemsPerPage = 10;
+
+  // set listings to show it on each page
+  const sliceListings = (sourceListings, pageIndex, itemsPerPage) => sourceListings.slice(
+    pageIndex * itemsPerPage,
+    (pageIndex + 1) * itemsPerPage,
+  );
+
+  const displayedListings = sliceListings(ascListings, currentPageIndex, itemsPerPage);
+  const filterListings = sliceListings(filteredListings, currentPageIndex, itemsPerPage);
+
+  let content;
+  if (status === 'loading') {
+    content = <p style={{ textAlign: 'center' }}>Loading...</p>;
+  } else if (status === 'loaded') {
+    content = changeView
+      ? (
+        <DataTableView
+          Listings={(searchInputValue.length >= 1
+          || maxInputValue.length >= 1) ? filterListings : displayedListings}
+          currentPageIndex={currentPageIndex}
+          itemsPerPage={itemsPerPage}
+        />
+      )
+      : (
+        <CardView
+          Listings={(searchInputValue.length >= 1
+            || maxInputValue.length >= 1) ? filterListings : displayedListings}
+          currentPageIndex={currentPageIndex}
+          itemsPerPage={itemsPerPage}
+        />
+      );
+  } else {
+    content = <p style={{ textAlign: 'center' }}>Oops, something went wrong! Check your internet connection.</p>;
+  }
   return (
     <div className="home-container">
       <h1>Welcome to Real Estate Viewer!</h1>
       <button
-        className="
-          justify-self-center
-          bg-green-500
-          text-white
-          m-2
-          px-3
-          py-2
-          rounded
-          hover:bg-green-400
-          active:bg-green-800
-          focus:outline-none
-          focus:ring
-          focus:ring-green-500
-        "
+        className={changeViewBtn}
         onClick={() => { switchView(); }}
         type="button"
       >
@@ -66,24 +120,47 @@ function Home() {
         Find Your Dream Home
         <img className="animate-bounce" src={arrow} alt="down-arrow" />
       </h2>
-      {changeView
-        ? <DataTableView />
-        : <CardView />}
-      <div className="justify-self-center">
-        <button type="button" onClick={handlePreviousPage} disabled={currentPageIndex === 0} className="btn btn-outline-dark btn-sm">Prev</button>
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            type="button"
-            key={index}
-            onClick={() => setCurrentPageIndex(index)}
-            className={`${index === currentPageIndex ? '' : ''} btn btn-outline-dark btn-sm`}
-            style={{ margin: '5px' }}
-          >
-            {index + 1}
-          </button>
-        ))}
-        <button type="button" onClick={handleNextPage} disabled={currentPageIndex === totalPages - 1} className="btn btn-outline-dark btn-sm">Next</button>
+      <div className="filters-container">
+        <input
+          type="text"
+          value={searchInputValue}
+          onChange={(e) => {
+            setSearchInputValue(e.target.value);
+            updateFilteredListings(e.target.value, maxInputValue);
+          }}
+          placeholder="Search by title..."
+        />
+        <input
+          type="number"
+          placeholder="Filter by max price"
+          value={maxInputValue}
+          onChange={(e) => {
+            setMaxInputValue(e.target.value);
+            updateFilteredListings(searchInputValue, e.target.value);
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            handleSort();
+          }}
+          className={`${ascOrder ? 'bg-green-600' : 'bg-green-400'
+          } ${sortByBtn}`}
+        >
+          Sort by Price
+          {' '}
+          ↓
+        </button>
       </div>
+      {content}
+      {/* passing value for setting pagination */}
+      <Pagination
+        searchInputValue={searchInputValue}
+        filteredListingsLength={filteredListings.length}
+        ascListingsLength={ascListings.length}
+        currentPageIndex={currentPageIndex}
+        setCurrentPageIndex={setCurrentPageIndex}
+      />
     </div>
   );
 }
