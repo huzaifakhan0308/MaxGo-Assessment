@@ -1,31 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import '../styles/CardView.css';
 
-function CardView() {
+function CardView({ Listings, currentPageIndex, itemsPerPage }) {
   const navigate = useNavigate();
-  const Listings = [
-    {
-      imageUrl: 'https://placehold.co/400',
-      title: '1 Kanal House for sale',
-      address: 'DHA Phase 6, Lahore',
-      beds: 5,
-      bath: 6,
-      coveredAreaSQFT: 2350,
-      propertyType: 'house',
-      isCommercial: false,
-      price: 65000000,
-      id: 1,
-    },
-  ];
-
   const goToDetails = (id) => {
     navigate(`details/${id}`);
   };
 
   return (
     <div className="cardView-container">
-      {Listings?.map((listing) => (
+      {Listings?.map((listing, index) => (
         <div
           key={listing.id}
           className="card"
@@ -38,22 +24,15 @@ function CardView() {
             }
           }}
         >
-          <h3 className="">{listing.title}</h3>
-          <p className="">
-            address:
-            {' '}
-            {listing.address}
-            ,
-          </p>
-          <p className="">
+          <span style={{ opacity: '50%' }}>{currentPageIndex * itemsPerPage + index + 1}</span>
+          <h3 className="card-title">{listing.title}</h3>
+          <address className="card-address">{listing.address}</address>
+          <p className="card-property-type">
             Property Type:
-            {' '}
             {listing.propertyType}
-            ,
           </p>
-          <p className="">
+          <p className="card-price">
             Price:
-            {' '}
             {listing.price}
           </p>
         </div>
@@ -61,5 +40,24 @@ function CardView() {
     </div>
   );
 }
+
+CardView.propTypes = {
+  Listings: PropTypes.arrayOf(
+    PropTypes.shape({
+      imageUrl: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      address: PropTypes.string.isRequired,
+      beds: PropTypes.number.isRequired,
+      bath: PropTypes.number.isRequired,
+      coveredAreaSQFT: PropTypes.number.isRequired,
+      propertyType: PropTypes.string.isRequired,
+      isCommercial: PropTypes.bool.isRequired,
+      price: PropTypes.string.isRequired,
+      id: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+  currentPageIndex: PropTypes.number.isRequired,
+  itemsPerPage: PropTypes.number.isRequired,
+};
 
 export default CardView;
